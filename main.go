@@ -7,12 +7,17 @@ import (
 	"os"
 	"strings"
 	"time"
+	_ "time/tzdata"
 )
 
 var tzLocation *time.Location
 
 func init() {
 	tzLocation, _ = time.LoadLocation("America/New_York")
+	if tzLocation == nil {
+		log.Fatalf("error loading timezone: %s", "America/New_York")
+	}
+	fmt.Printf("Timezone: %s\n", tzLocation.String())
 }
 
 func main() {
