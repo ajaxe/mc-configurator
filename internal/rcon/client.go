@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -28,22 +30,29 @@ type RCONPacket struct {
 
 // Client represents an RCON client.
 type Client struct {
-	conn net.Conn
-	host string
-	port int
-	password string
+	conn          net.Conn
+	host          string
+	port          int
+	password      string
 	authenticated bool
-	requestID int32
+	requestID     int32
 }
 
 // NewClient creates a new RCON client.
 // host: The IP address or hostname of the Minecraft server.
 // port: The RCON port of the server (default is 25575).
 // password: The RCON password.
-func NewClient(host string, port int, password string) *Client {
+func NewClient() *Client {
+	host := "localhost" // or your server's IP
+	port := os.Getenv("MC_RCON_PORT")
+	password := os.Getenv("MC_RCON_PASSWORD")
+	p, _ := strconv.Atoi(port)
+
+	fmt.Printf("Client: host=%s port=%d password=%v\n", host, p, password != "")
+
 	return &Client{
 		host:     host,
-		port:     port,
+		port:     p,
 		password: password,
 		// Start with a non-zero request ID, for example, the current time
 		requestID: int32(time.Now().Unix()),
@@ -125,7 +134,6 @@ func (c *Client) ExecuteCommand(command string) (string, error) {
 	return string(resp.Payload), nil
 }
 
-
 // writePacket constructs and sends a packet to the server.
 func (c *Client) writePacket(packetType int32, payload []byte) error {
 	c.requestID++ // Increment request ID for each new packet sent
@@ -190,6 +198,7 @@ func (c *Client) readPacket() (*RCONPacket, error) {
 	}, nil
 }
 
+/*
 // main function to demonstrate the RCON client.
 func main() {
 	// --- IMPORTANT ---
@@ -198,10 +207,6 @@ func main() {
 	// enable-rcon=true
 	// rcon.port=25575
 	// rcon.password=your_password
-
-	serverHost := "127.0.0.1" // or your server's IP
-	serverPort := 25575
-	rconPassword := "minecraft"
 
 	// Create a new client
 	client := NewClient(serverHost, serverPort, rconPassword)
@@ -245,4 +250,4 @@ func main() {
 	}
 	// The "say" command doesn't return a visible response payload, but it will appear in the server chat.
 	fmt.Println("Command sent. Check the in-game chat or server console.")
-}
+} */

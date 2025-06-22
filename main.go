@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"mc-configurator/internal/config"
+	"mc-configurator/internal/rcon"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +19,14 @@ func main() {
 		o := config.NewGeneratorOptions(os.Args[1:])
 		generator := config.NewConfigGenerator(o)
 		generator.Execute()
+	} else {
+		// RCON is not available to bedrock_server, instead we enabled tty and stdin
+		// on Docker container to send messages to the server after "docker attach", via docker sdk.
+		err := rcon.NewCommand().Execute(os.Args[2:])
+		if err != nil {
+			fmt.Printf("Error executing RCON command: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
